@@ -3,100 +3,129 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 @RestController
 public class ApiController {
 
-    ArrayList<String> messages = new ArrayList<>();
-    ArrayList<User> users = new ArrayList<>();
+    ArrayList<Theme> themes = new ArrayList<>();
 
-    @GetMapping("messages")
-    public String getMessages() {
-        return String.join(", ", messages);
+    @PutMapping("themes")
+    public void addTheme(@RequestBody String theme) {
+        themes.add(new Theme(theme));
     }
 
-    @PostMapping("messages")
-    public String createMessage(@RequestBody String message) {
-        messages.add(message);
-        return message + " was created.";
+    @DeleteMapping("themes/{index}")
+    public void deleteTheme(@PathVariable("index") int index) {
+        themes.remove(index);
     }
 
-    @GetMapping("messages/{index}")
-    public String getMessage(@PathVariable("index") String index) {
-        try {
-            int i = Integer.parseInt(index);
-            if (i < messages.size()) {
-                return messages.get(i);
-            } else {
-                return "There is no message with requested index.";
+    @GetMapping("themes")
+    public String getThemes() {
+        ArrayList<String> themesStrings = new ArrayList<>();
+        for (Theme theme : themes) {
+            themesStrings.add(theme.toString());
+        }
+        return String.join("\n", themesStrings);
+    }
+
+    @PostMapping("themes/{index}")
+    public void changeTheme(@PathVariable("index") int index, @RequestBody String theme) {
+        themes.set(index, new Theme(theme));
+    }
+
+    @GetMapping("themes/quantity")
+    public String getThemesQuantity() {
+        return String.valueOf(themes.size());
+    }
+
+    @DeleteMapping("themes/all")
+    public void deleteAllThemes() {
+        themes = new ArrayList<>();
+    }
+
+    @GetMapping("themes/{index}")
+    public String getTheme(@PathVariable("index") int index) {
+        return themes.get(index).toString();
+    }
+
+    @PutMapping("comments/{userName}")
+    public void addComment(@PathVariable("userName") String userName,@RequestBody Unpack data) {
+        String themeName = data.theme;
+        String comment = data.comment;
+        for (Theme theme : themes) {
+            if (theme.name.equals(themeName)) {
+                theme.addComment(userName, comment);
             }
-        } catch (NumberFormatException ex) {
-            return "Index must be an integer.";
         }
     }
 
-    @DeleteMapping("messages/{index}")
-    public String deleteMessage(@PathVariable("index") String index) {
-        try {
-            int i = Integer.parseInt(index);
-            if (i < messages.size()) {
-                messages.remove( (int) i);
-                return "Message was deleted successfully.";
-            } else {
-                return "There is no message with requested index.";
+    @DeleteMapping("comments/{userName}")
+    public void deleteComment(@PathVariable("userName") String userName, @RequestBody String themeName) {
+        for (Theme theme : themes) {
+            if (theme.name.equals(themeName)) {
+                for (int i = 0; i < theme.comments.size(); i++) {
+                    if (theme.comments.get(i).user.equals(userName)) {
+                        theme.comments.remove(i);
+                    }
+                }
             }
-        } catch (NumberFormatException ex) {
-            return "Index must be an integer.";
         }
     }
 
-    @PutMapping("messages/{index}")
-    public String updateMessage(@PathVariable("index") String index, @RequestBody String message) {
-        try {
-            int i = Integer.parseInt(index);
-            if (i < messages.size()) {
-                messages.remove(i);
-                messages.add(i, message);
-                return "Message was changed successfully.";
-            } else {
-                return "There is no message with requested index.";
+    @PostMapping("comments/{userName}")
+    public void changeComment(@PathVariable("userName") String userName, @RequestBody Unpack data) {
+        String themeName = data.theme;
+        String comment = data.comment;
+        for (Theme theme : themes) {
+            if (theme.name.equals(themeName)) {
+                int index = 0;
+                for (int i = 0; i < theme.comments.size(); i++) {
+                    if (theme.comments.get(i).user.equals(userName)) {
+                        index = i;
+                        break;
+                    }
+                }
+                theme.comments.set(index, new Comment(theme.comments.get(index).user, comment));
             }
-        } catch (NumberFormatException ex) {
-            return "Index must be an integer.";
         }
     }
 
-    @PutMapping("users")
-    public void addUser(@RequestBody User userToAdd) {
-        users.add(userToAdd);
-    }
-
-    @DeleteMapping("users/{index}")
-    public void deleteUser(@PathVariable("index") int index) {
-        users.remove((int) index);
-    }
-
-    @GetMapping("users/{index}")
-    public String getUser(@PathVariable("index") int index) {
-        return users.get(index).toString();
-    }
-
-    @GetMapping("users")
-    public String getUsers() {
-        ArrayList<String> usersStrings = new ArrayList<>();
-        for (User user : users) {
-            usersStrings.add(user.toString());
+    @GetMapping("commentsByTheme")
+    public String getCommentsByTheme(@RequestBody String themeName) {
+        for (Theme theme : themes) {
+            if (theme.name.equals(themeName)) {
+                ArrayList<String> commentsStrings = new ArrayList<>();
+                for (Comment comment : theme.comments) {
+                    commentsStrings.add(comment.toString());
+                }
+                return String.join("\n", commentsStrings);
+            }
         }
-        return String.join("\n", usersStrings);
+        return "";
     }
 
-    @PutMapping("users/{index}/{age}")
-    public void changeAge(@PathVariable("index") int index, @PathVariable("age") int age) {
-        users.get(index).setAge(age);
+    @GetMapping("commentsByUser/{userName}")
+    public String getCommentsByUser(@PathVariable("userName") String userName) {
+        ArrayList<String> userComments = new ArrayList<>();
+        for (Theme theme : themes) {
+            for (Comment comment : theme.comments) {
+                if (comment.user.equals(userName)) {
+                    userComments.add(comment.text);
+                }
+            }
+        }
+
+        return String.join("\n", userComments);
     }
 
-
+    @DeleteMapping("comments/all/{userName}")
+    public void deleteAllCommentsByUser(@PathVariable("userName") String userName) {
+        for (Theme theme : themes) {
+            this.deleteComment(userName, theme.name);
+        }
+    }
 
 
 
