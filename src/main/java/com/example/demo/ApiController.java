@@ -12,197 +12,90 @@ import java.util.Comparator;
 @RestController
 public class ApiController {
 
-    ArrayList<Theme> themes = new ArrayList<>();
+    ArrayList<User> users = new ArrayList<>();
 
-    @PutMapping("themes")
-    public void addTheme(@RequestBody String theme) {
-        themes.add(new Theme(theme));
-    }
-
-    @DeleteMapping("themes/{index}")
-    public String deleteTheme(@PathVariable("index") int index) {
-        if (index < 0 || index > themes.size() - 1)
-            return "null";
-        themes.remove(index);
-        return "";
-    }
-
-    @GetMapping("themes")
-    public String getThemes(@RequestParam(required = false) String sortWay) {
-        ArrayList<Theme> sortedThemes = new ArrayList<>(themes);
-        if (sortWay != null) {
-            switch (sortWay) {
-                case "name":
-                    sortedThemes.sort(Comparator.comparing(Theme::getName));
-                    break;
-                case "updatedDate":
-                    sortedThemes.sort(Comparator.comparing(Theme::getUpdatedDate));
-                    Collections.reverse(sortedThemes);
-                    break;
-                default:
-                    sortedThemes.sort(Comparator.comparing(Theme::getCreatedDate));
-                    Collections.reverse(sortedThemes);
-                    break;
-            }
+    @PutMapping("users/{repeatPassword}")
+    public void addUser(@RequestBody User newUser, @PathVariable("repeatPassword") String rp) {
+        if (!(rp.equals(newUser.getPassword()))) {
+            throw new NotSamePasswordException();
         }
-
-        ArrayList<String> themesStrings = new ArrayList<>();
-        for (Theme theme : sortedThemes) {
-            themesStrings.add(theme.toString());
+        if (!(newUser.getUsername().matches("[A-Za-z]+"))) {
+            throw new BadLettersException();
         }
-        return String.join("\n", themesStrings);
-    }
-
-    @PostMapping("themes/{index}")
-    public String changeTheme(@PathVariable("index") int index, @RequestBody String theme) {
-        if (index < 0 || index > themes.size() - 1)
-            return "null";
-        themes.set(index, new Theme(theme));
-        return "";
-    }
-
-    @GetMapping("themes/quantity")
-    public String getThemesQuantity() {
-        return String.valueOf(themes.size());
-    }
-
-    @DeleteMapping("themes/all")
-    public void deleteAllThemes() {
-        themes = new ArrayList<>();
-    }
-
-    @GetMapping("themes/{index}")
-    public String getTheme(@PathVariable("index") int index) {
-        if (index < 0 || index > themes.size() - 1)
-            return "null";
-        return themes.get(index).toString();
-    }
-
-    @PutMapping("comments/{userName}")
-    public String addComment(@PathVariable("userName") String userName,@RequestBody Unpack data) {
-        String themeName = data.theme;
-        String comment = data.comment;
-        boolean flag = false;
-        for (Theme theme : themes) {
-            if (theme.name.equals(themeName)) {
-                theme.addComment(userName, comment);
-                flag = true;
-            }
-        }
-        if (!flag)
-            return "null";
-        return "";
-    }
-
-    @DeleteMapping("comments/{userName}")
-    public String deleteComment(@PathVariable("userName") String userName, @RequestBody String themeName) {
-        boolean flag = false;
-        for (Theme theme : themes) {
-            if (theme.name.equals(themeName)) {
-                theme.deleteComment(userName);
-            }
-        }
-        if (!flag)
-            return "null";
-        return "";
-    }
-
-    @PostMapping("comments/{userName}")
-    public String changeComment(@PathVariable("userName") String userName, @RequestBody Unpack data) {
-        boolean flag = false;
-        String themeName = data.theme;
-        String comment = data.comment;
-        for (Theme theme : themes) {
-            if (theme.name.equals(themeName)) {
-                theme.changeComment(userName, comment);
-                flag = true;
-            }
-        }
-
-        if (!flag)
-            return "null";
-        return "";
-    }
-
-    @GetMapping("commentsByTheme")
-    public String getCommentsByTheme(@RequestBody String themeName, @RequestParam(required = false) String sortWay) {
-        for (Theme theme : themes) {
-            if (theme.name.equals(themeName)) {
-                ArrayList<Comment> sortedComments = new ArrayList<>(theme.comments);
-                if (sortWay != null) {
-                    switch (sortWay) {
-                        case "text":
-                            sortedComments.sort(Comparator.comparing(Comment::getText));
-                            break;
-                        case "updatedDate":
-                            sortedComments.sort(Comparator.comparing(Comment::getUpdatedDate));
-                            Collections.reverse(sortedComments);
-                            break;
-                        default:
-                            sortedComments.sort(Comparator.comparing(Comment::getCreatedDate));
-                            Collections.reverse(sortedComments);
-                            break;
-                    }
-                }
-                ArrayList<String> commentsStrings = new ArrayList<>();
-                for (Comment comment : sortedComments) {
-                    commentsStrings.add(comment.toString());
-                }
-                return String.join("\n", commentsStrings);
-            }
-        }
-        return "null";
-    }
-
-    @GetMapping("commentsByUser/{userName}")
-    public String getCommentsByUser(@PathVariable("userName") String userName, @RequestParam(required = false) String sortWay) {
-        ArrayList<Comment> userComments = new ArrayList<>();
-        for (Theme theme : themes) {
-            for (Comment comment : theme.comments) {
-                if (comment.user.equals(userName)) {
-                    userComments.add(comment);
+        if (this.users.size() != 0) {
+            for (int i = 0; i < this.users.size(); i++) {
+                if (this.users.get(i).getUsername().equals(newUser.getUsername())) {
+                    throw new ThisUserAlreadyExistsException();
                 }
             }
         }
-        if (userComments.isEmpty())
-            return "null";
+        users.add(newUser);
+    }
 
-        ArrayList<Comment> sortedComments = new ArrayList<>(userComments);
-        if (sortWay != null) {
-            switch (sortWay) {
-                case "text":
-                    sortedComments.sort(Comparator.comparing(Comment::getText));
-                    break;
-                case "updatedDate":
-                    sortedComments.sort(Comparator.comparing(Comment::getUpdatedDate));
-                    Collections.reverse(sortedComments);
-                    break;
-                default:
-                    sortedComments.sort(Comparator.comparing(Comment::getCreatedDate));
-                    Collections.reverse(sortedComments);
-                    break;
+    @PostMapping("users/{username}")
+    public String getUser(@PathVariable("username") String username) {
+        for (int i = 0; i < this.users.size(); i++) {
+            if (this.users.get(i).getUsername().equals(username)) {
+                return this.users.get(i).toString();
             }
         }
-        ArrayList<String> userCommentsText = new ArrayList<>();
-        for (int i = 0; i < sortedComments.size(); i++) {
-            userCommentsText.add(sortedComments.get(i).toString());
-        }
-        return String.join("\n", userCommentsText);
+
+        throw new UserNotFoundException();
     }
 
-    @DeleteMapping("comments/all/{userName}")
-    public String deleteAllCommentsByUser(@PathVariable("userName") String userName) {
-        boolean flag = false;
-        for (Theme theme : themes) {
-            this.deleteComment(userName, theme.name);
-            flag = true;
+    @DeleteMapping("users/{usernameToTakeAction}/{username}")
+    public void deleteUser(@PathVariable("username") String username, @PathVariable("usernameToTakeAction") String usernameToTakeAction) {
+        if (!(usernameToTakeAction.startsWith("admin"))) {
+            throw new NotAllowedException();
         }
-
-        if (!flag)
-            return "null";
-
-        return "";
+        for (int i = 0; i < this.users.size(); i++) {
+            if (this.users.get(i).getUsername().equals(username)) {
+                this.users.remove(i);
+                return;
+            }
+        }
+        throw new UserNotFoundException();
     }
+
+    @PutMapping("users/{usernameToTakeAction}/{usernameToUpdate}/{newPassword}")
+    public void updatePassword(@PathVariable("usernameToTakeAction") String usernameToTakeAction, @PathVariable("usernameToUpdate") String usernameToUpdate, @PathVariable("newPassword") String newPassword) {
+        if (!(usernameToTakeAction.startsWith("update"))) {
+            throw new NotAllowedException();
+        }
+        if (!(usernameToUpdate.matches("[A-Za-z]+"))) {
+            throw new BadLettersException();
+        }
+        for (int i = 0; i < this.users.size(); i++) {
+            if (this.users.get(i).getUsername().equals(usernameToUpdate)) {
+                this.users.get(i).setPassword(newPassword);
+                return;
+            }
+        }
+        throw new UserNotFoundException();
+
+    }
+
+    @GetMapping("users/{age}")
+    public String getUsers(@PathVariable("age") int age, @RequestParam(required = false) String direction) {
+        String toReturn = "";
+        if (direction != null && direction.equals("up")) {
+            for (int i = this.users.size() - 1; i >= 0; i--) {
+                if  (this.users.get(i).getAge() >= age - 5 && this.users.get(i).getAge() <= age +5) {
+                    toReturn = toReturn.concat(this.users.get(i).toString());
+                    toReturn = toReturn.concat("\n");
+                }
+            }
+        } else {
+            for (int i = 0; i < this.users.size(); i++) {
+                if (this.users.get(i).getAge() >= age - 5 && this.users.get(i).getAge() <= age + 5) {
+                    toReturn = toReturn.concat(this.users.get(i).toString());
+                    toReturn = toReturn.concat("\n");
+                }
+            }
+        }
+        return toReturn;
+    }
+
 
 
 
