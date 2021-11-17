@@ -1,15 +1,19 @@
 package com.example.demo;
 
-public class User {
+public class NewUser {
     private String username;
     private int age;
     private String password;
+    private String repassword;
 
-    public User(String username, String password, int age) {
+    public NewUser(String username, String password, String repassword, int age) {
         this.username = username;
         this.age = age;
         this.password = password;
+        this.repassword = repassword;
     }
+
+
 
 
     public String getUsername() {
@@ -36,9 +40,7 @@ public class User {
         this.password = password;
     }
 
-    @Override
-    public String toString() {
-        return "User(Username=" + this.username + ", Age=" + this.age + ")";
+    public String getRepassword() {
+        return repassword;
     }
-
 }

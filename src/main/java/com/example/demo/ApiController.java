@@ -14,8 +14,9 @@ public class ApiController {
 
     ArrayList<User> users = new ArrayList<>();
 
-    @PutMapping("users/{repeatPassword}")
-    public void addUser(@RequestBody User newUser, @PathVariable("repeatPassword") String rp) {
+    @PutMapping("users")
+    public void addUser(@RequestBody NewUser newUser) {
+        String rp = newUser.getRepassword();
         if (!(rp.equals(newUser.getPassword()))) {
             throw new NotSamePasswordException();
         }
@@ -29,7 +30,9 @@ public class ApiController {
                 }
             }
         }
-        users.add(newUser);
+
+        User userToAdd = new User(newUser.getUsername(), newUser.getPassword(), newUser.getAge());
+        users.add(userToAdd);
     }
 
     @PostMapping("users/{username}")
