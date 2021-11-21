@@ -10,7 +10,6 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api")
 public class ApiController {
     private final TutorialRepository tutorialRepository;
     public ApiController(TutorialRepository tutorialRepository)
