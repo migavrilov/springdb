@@ -9,55 +9,52 @@ import javax.persistence.Table;
 @Table(name = "tutorials")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) private long id;
-    @Column(name = "username")
-    private String username;
-    @Column(name = "password")
-    private String password;
-    @Column(name = "age")
-    private int age;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+    //    @Column(name = "username")
+//    private String username;
+//    @Column(name = "password")
+//    private String password;
+//    @Column(name = "age")
+//    private int age;
+    @Column(name = "firstname")
+    private String firstname;
+    @Column(name = "lastname")
+    private String lastname;
+
+    public User(String firstname, String lastname) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+    }
+
     public User() {
-    }
-    public User(String username, String password, int age) {
-        this.username = username;
-        this.password = password;
-        this.age = age;
+        this.firstname = "test";
+        this.lastname = "test";
     }
 
-    public long getId() {
-        return id;
+
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getUsername() {
-        return username;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", username=" + username + ", password=" +
-                password + ", age=" + age + "]";
-    } }
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                '}';
+    }
+}
